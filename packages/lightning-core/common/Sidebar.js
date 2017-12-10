@@ -11,15 +11,36 @@ import NavLinks from './NavLinks'
 import NavFooter from './NavFooter'
 
 export class Sidebar extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      syncProgress: 0,
+      fetchAccount: undefined
+    }
+  }
+
   componentDidMount() {
     this.props.fetchAccount()
       .catch(console.error)
     this.props.location.pathname !== '/accounts' && this.props.fetchBalances()
+    !this.props.isSynced &&
+      this.setState({ fetchAccountInterval: setInterval(this.props.fetchAccount, 1000) })
+  }
+
+  componentWillReceiveProps(nextProps) {
+    const { isSynced, syncedHeight, blockHeight } = this.props
+    const { fetchAccountInterval } = this.state
+    !isSynced &&
+      nextProps.isSynced &&
+      clearInterval(fetchAccountInterval) &&
+      this.setState({ fetchAccountInterval: undefined })
+    this.setState({ syncProgress: syncedHeight / blockHeight * 100 })
   }
 
   render() {
     const { navigateToSubpage, currency, pubkey, balances, isSynced,
       serverRunning } = this.props
+    const { syncProgress } = this.state
     const styles = reactCSS({
       'default': {
         sidebar: {
@@ -31,7 +52,7 @@ export class Sidebar extends React.Component {
           padding: 'small',
         },
         synced: {
-          background: 'blue',
+          background: 'dark-teal',
           direction: 'column',
           align: 'center',
           verticalAlign: 'center',
@@ -41,10 +62,19 @@ export class Sidebar extends React.Component {
           marginBottom: -7,
           borderBottomLeftRadius: 4,
           height: 34,
+          position: 'relative'
+        },
+        progress: {
+          position: 'absolute',
+          background: 'blue',
+          height: 34,
+          width: `${syncProgress}%`,
+          alignSelf: 'flex-start'
         },
         syncedText: {
           color: 'black',
           size: 'small',
+          zIndex: 2
         },
       },
     })
@@ -66,20 +96,8 @@ export class Sidebar extends React.Component {
 
           { serverRunning && isSynced ? null : (
             <Box style={ styles.synced } className="syncing">
-              <style
-                dangerouslySetInnerHTML={{
-                  __html: `
-                  .syncing {
-                    animation: pulse 1.5s 100ms ease-in-out infinite alternate;
-                  }
-                  @keyframes pulse {
-                    0% { opacity: 1 }
-                    50% { opacity: 0.8 }
-                    100% { opacity: 1 }
-                  }`,
-                }}
-              />
               <Text style={ styles.syncedText }>Syncing to Chain</Text>
+              <Box style={styles.progress} />
             </Box>
           ) }
         </Box>
@@ -92,6 +110,8 @@ export default withRouter(connect(
   state => ({
     serverRunning: store.getServerRunning(state),
     isSynced: store.getSyncedToChain(state),
+    syncedHeight: store.getSyncedHeight(state),
+    blockHeight: store.getBlockHeight(state),
     pubkey: store.getAccountPubkey(state),
     currency: store.getCurrency(state),
     balances: store.getAccountBalances(state),

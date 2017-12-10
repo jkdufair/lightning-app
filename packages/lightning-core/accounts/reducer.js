@@ -18,7 +18,9 @@ export const FETCH_ACCOUNT_FAILURE = 'ACCOUNTS/FETCH_ACCOUNT_ERROR'
 
 const initialState = {
   pubkey: '',
-  isSynced: true,
+  isSynced: false,
+  syncedHeight: 0,
+  blockHeight: 0,
   serverRunning: false,
   currency: 'satoshi',
   balances: {
@@ -37,9 +39,20 @@ export default (state = initialState, action) => {
     case REQUEST_CHANNELS:
       return { ...state, loadingChannels: true }
     case FETCH_ACCOUNT:
-      return { ...state, pubkey: action.pubkey, isSynced: action.isSynced }
+      return {
+        ...state,
+        pubkey: action.pubkey,
+        isSynced: action.isSynced,
+        syncedHeight: action.syncedHeight,
+        blockHeight: action.blockHeight
+    }
     case FETCH_ACCOUNT_FAILURE:
-      return { ...state, isSynced: false }
+      return {
+        ...state,
+        isSynced: false,
+        syncedHeight: 0,
+        blockHeight: 0
+    }
     case SET_BALANCES:
       return { ...state, balances: { ...state.balances, ...action.balances } }
     case PENDING_CHANNELS:
@@ -85,6 +98,8 @@ export const actions = {
       schema: account => ({
         pubkey: account.identity_pubkey,
         isSynced: account.synced_to_chain,
+        syncedHeight: account.synced_height,
+        blockHeight: account.block_height
       }),
     },
   }),
@@ -261,6 +276,8 @@ export const actions = {
 
 export const selectors = {
   getSyncedToChain: state => state.isSynced,
+  getSyncedHeight: state => state.syncedHeight,
+  getBlockHeight: state => state.blockHeight,
   getServerRunning: state => state.serverRunning,
   getAccountPubkey: state => state.pubkey,
   getCurrency: state => state.currency,

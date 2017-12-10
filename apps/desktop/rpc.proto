@@ -272,6 +272,8 @@ message GetInfoResponse {
     bool testnet = 10 [ json_name = "testnet" ];
 
     repeated string chains = 11 [ json_name = "chains" ];
+
+    uint32 synced_height = 12 [ json_name = "synced_height" ];
 }
 
 message ConfirmationUpdate {
