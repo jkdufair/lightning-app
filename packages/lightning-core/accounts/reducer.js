@@ -19,7 +19,7 @@ export const FETCH_ACCOUNT_FAILURE = 'ACCOUNTS/FETCH_ACCOUNT_ERROR'
 const initialState = {
   pubkey: '',
   isSynced: false,
-  syncedHeight: 0,
+  walWetBestBlockTimestamp: 0,
   blockHeight: 0,
   serverRunning: false,
   currency: 'satoshi',
@@ -43,14 +43,14 @@ export default (state = initialState, action) => {
         ...state,
         pubkey: action.pubkey,
         isSynced: action.isSynced,
-        syncedHeight: action.syncedHeight,
+        walWetBestBlockTimestamp: action.walletBestBlockTimestamp,
         blockHeight: action.blockHeight
     }
     case FETCH_ACCOUNT_FAILURE:
       return {
         ...state,
         isSynced: false,
-        syncedHeight: 0,
+        walWetBestBlockTimestamp: 0,
         blockHeight: 0
     }
     case SET_BALANCES:
@@ -98,7 +98,7 @@ export const actions = {
       schema: account => ({
         pubkey: account.identity_pubkey,
         isSynced: account.synced_to_chain,
-        syncedHeight: account.synced_height,
+        walWetBestBlockTimestamp: account.synced_height,
         blockHeight: account.block_height
       }),
     },
@@ -276,7 +276,7 @@ export const actions = {
 
 export const selectors = {
   getSyncedToChain: state => state.isSynced,
-  getSyncedHeight: state => state.syncedHeight,
+  getWalletBestBlockTimestamp: state => state.walletBestBlockTimestamp,
   getBlockHeight: state => state.blockHeight,
   getServerRunning: state => state.serverRunning,
   getAccountPubkey: state => state.pubkey,

@@ -15,7 +15,8 @@ export class Sidebar extends React.Component {
     super(props)
     this.state = {
       syncProgress: 0,
-      fetchAccount: undefined
+      fetchAccount: undefined,
+      initialWalletBestBlockTimestamp: 0
     }
   }
 
@@ -28,13 +29,24 @@ export class Sidebar extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    const { isSynced, syncedHeight, blockHeight } = this.props
-    const { fetchAccountInterval } = this.state
+    const { isSynced, walletBestBlockTimestamp, blockHeight } = this.props
+    const { fetchAccountInterval, initialWalletBestBlockTimestamp } = this.state
+    if (initialWalletBestBlockTimestamp === 0 && walletBestBlockTimestamp)
+      this.setState({ initialWalletBestBlockTimestamp: walletBestBlockTimestamp }, () => {
+        setSyncProgress(this.state.initialWalletBestBlockTimestamp, walletBestBlockTimestamp)
+      })
     !isSynced &&
       nextProps.isSynced &&
       clearInterval(fetchAccountInterval) &&
       this.setState({ fetchAccountInterval: undefined })
-    this.setState({ syncProgress: syncedHeight / blockHeight * 100 })
+    this.setSyncProgress(initialWalletBestBlockTimestamp, walletBestBlockTimestamp)
+  }
+
+  setSyncProgress(initialWalletBestBlockTimestamp, walletBestBlockTimestamp) {
+    this.setState({
+      syncProgress: (walletBestBlockTimestamp - initialWalletBestBlockTimestamp) /
+        (Math.round((new Date()).getTime() / 1000) - initialWalletBestBlockTimestamp) * 100 
+    })
   }
 
   render() {
@@ -110,7 +122,7 @@ export default withRouter(connect(
   state => ({
     serverRunning: store.getServerRunning(state),
     isSynced: store.getSyncedToChain(state),
-    syncedHeight: store.getSyncedHeight(state),
+    walletBestBlockTimestamp: store.getWalletBestBlockTimestamp(state),
     blockHeight: store.getBlockHeight(state),
     pubkey: store.getAccountPubkey(state),
     currency: store.getCurrency(state),

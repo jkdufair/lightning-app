@@ -273,7 +273,7 @@ message GetInfoResponse {
 
     repeated string chains = 11 [ json_name = "chains" ];
 
-    uint32 synced_height = 12 [ json_name = "synced_height" ];
+    uint32 wallet_best_block_timestamp = 12 [ json_name = "wallet_best_block_timestamp" ];
 }
 
 message ConfirmationUpdate {
