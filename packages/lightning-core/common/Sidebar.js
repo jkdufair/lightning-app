@@ -16,7 +16,7 @@ export class Sidebar extends React.Component {
     this.state = {
       syncProgress: 0,
       fetchAccount: undefined,
-      initialWalletBestBlockTimestamp: 0
+      initialBestHeaderTimestamp: 0
     }
   }
 
@@ -29,23 +29,23 @@ export class Sidebar extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    const { isSynced, walletBestBlockTimestamp, blockHeight } = this.props
-    const { fetchAccountInterval, initialWalletBestBlockTimestamp } = this.state
-    if (initialWalletBestBlockTimestamp === 0 && walletBestBlockTimestamp)
-      this.setState({ initialWalletBestBlockTimestamp: walletBestBlockTimestamp }, () => {
-        setSyncProgress(this.state.initialWalletBestBlockTimestamp, walletBestBlockTimestamp)
+    const { isSynced, bestHeaderTimestamp, blockHeight } = this.props
+    const { fetchAccountInterval, initialBestHeaderTimestamp } = this.state
+    if (initialBestHeaderTimestamp === 0 && bestHeaderTimestamp)
+      this.setState({ initialBestHeaderTimestamp: bestHeaderTimestamp }, () => {
+        setSyncProgress(this.state.initialBestHeaderTimestamp, bestHeaderTimestamp)
       })
     !isSynced &&
       nextProps.isSynced &&
       clearInterval(fetchAccountInterval) &&
       this.setState({ fetchAccountInterval: undefined })
-    this.setSyncProgress(initialWalletBestBlockTimestamp, walletBestBlockTimestamp)
+    this.setSyncProgress(initialBestHeaderTimestamp, bestHeaderTimestamp)
   }
 
-  setSyncProgress(initialWalletBestBlockTimestamp, walletBestBlockTimestamp) {
+  setSyncProgress(initialBestHeaderTimestamp, bestHeaderTimestamp) {
     this.setState({
-      syncProgress: (walletBestBlockTimestamp - initialWalletBestBlockTimestamp) /
-        (Math.round((new Date()).getTime() / 1000) - initialWalletBestBlockTimestamp) * 100 
+      syncProgress: (bestHeaderTimestamp - initialBestHeaderTimestamp) /
+        (Math.round((new Date()).getTime() / 1000) - initialBestHeaderTimestamp) * 100 
     })
   }
 
@@ -122,7 +122,7 @@ export default withRouter(connect(
   state => ({
     serverRunning: store.getServerRunning(state),
     isSynced: store.getSyncedToChain(state),
-    walletBestBlockTimestamp: store.getWalletBestBlockTimestamp(state),
+    bestHeaderTimestamp: store.getBestHeaderTimestamp(state),
     blockHeight: store.getBlockHeight(state),
     pubkey: store.getAccountPubkey(state),
     currency: store.getCurrency(state),
